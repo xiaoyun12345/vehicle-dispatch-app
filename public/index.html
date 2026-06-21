@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>出车审批管理系统</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <h1>🚗 出车审批管理系统</h1>
+    <div class="header-actions">
+      <button class="btn btn-primary" onclick="openCreateModal()">+ 新建出车申请</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- 筛选栏 -->
+    <div class="filter-bar">
+      <label>
+        按日期筛选：
+        <input type="date" id="filterDate" onchange="loadDispatches()">
+      </label>
+      <button class="btn btn-secondary" onclick="document.getElementById('filterDate').value=''; loadDispatches();">清除筛选</button>
+    </div>
+
+    <!-- 数据表格 -->
+    <div class="table-wrapper">
+      <table id="dispatchTable">
+        <thead>
+          <tr>
+            <th>序号</th>
+            <th>出车地点</th>
+            <th>出车时间</th>
+            <th>回来时间</th>
+            <th>审批人</th>
+            <th>派车人</th>
+            <th>车型号牌</th>
+            <th>司机姓名</th>
+            <th>状态</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="dispatchBody">
+          <!-- 动态渲染 -->
+        </tbody>
+      </table>
+    </div>
+    <p id="emptyMsg" class="empty-msg">暂无出车记录</p>
+  </main>
+
+  <!-- 新建 / 编辑 弹窗 -->
+  <div id="modal" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+      <h2 id="modalTitle">新建出车申请</h2>
+      <form id="dispatchForm" onsubmit="saveDispatch(event)">
+        <input type="hidden" id="editId">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>出车地点 <span class="required">*</span></label>
+            <input type="text" id="departure_location" required placeholder="例如：上海浦东">
+          </div>
+          <div class="form-group">
+            <label>出车时间 <span class="required">*</span></label>
+            <input type="datetime-local" id="departure_time" required>
+          </div>
+          <div class="form-group">
+            <label>回来时间 <span class="required">*</span></label>
+            <input type="datetime-local" id="return_time" required>
+          </div>
+          <div class="form-group">
+            <label>审批人 <span class="required">*</span></label>
+            <input type="text" id="approver" required placeholder="审批人姓名">
+          </div>
+          <div class="form-group">
+            <label>派车人 <span class="required">*</span></label>
+            <input type="text" id="dispatcher" required placeholder="派车人姓名">
+          </div>
+          <div class="form-group">
+            <label>车型 <span class="required">*</span></label>
+            <input type="text" id="vehicle_model" required placeholder="例如：丰田卡罗拉">
+          </div>
+          <div class="form-group">
+            <label>车牌号 <span class="required">*</span></label>
+            <input type="text" id="vehicle_plate" required placeholder="例如：沪A·88888">
+          </div>
+          <div class="form-group">
+            <label>司机姓名 <span class="required">*</span></label>
+            <input type="text" id="driver_name" required placeholder="司机姓名">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">取消</button>
+          <button type="submit" class="btn btn-primary">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
