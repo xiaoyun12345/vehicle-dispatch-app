@@ -1,4 +1,4 @@
-<script src="app.js?v=2"></script>
+<script src="app.js?v=3"?v=2"></script>
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -115,8 +115,10 @@ form .full-width{grid-column:1/-1}
 </style>
 </head>
 <body>
-<div id="app"></div>
+<div id="app" style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif;color:#333;font-size:16px">Loading...</div>
 <script>
 </script>
+
+<script>setTimeout(function(){var a=document.getElementById('app');if(typeof render==='undefined'){a.innerHTML='<div style=text-align:center;padding:40px><h3>Script failed</h3><p>JS not loaded</p></div>'}else{try{render()}catch(e){a.innerHTML='<div style=text-align:center;padding:40px><h3>Error</h3><p>'+e.message+'</p></div>'}}},800)</script>
 </body>
 </html>
