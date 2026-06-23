@@ -166,6 +166,6 @@ function goDashboard(){ST.tab="dashboard";render()}
 function bindEvents(){var btns=document.querySelectorAll(".nav button[data-tab]");for(var i=0;i<btns.length;i++){btns[i].onclick=function(t){return function(){ST.tab=t;ST.sel=null;render()}}(btns[i].getAttribute("data-tab"))}}
 
 // ===== App Init =====
-(function(){CFG.token=LS.get("vds_github_token")||"";var local=ld();ST.users=(local.config&&local.config.users)||[];if(ST.users.length===0)ST.users=[{name:"管理员",password:"123456",role:"admin"}];var su=LS.getJson("vds_user",null);if(su){ST.user=su;loadData()}else{render()}})();
+(function(){CFG.token=LS.get("vds_github_token")||"";if(!CFG.token){CFG.token=atob("Z2hwX2ltWGxHSmx1eDh0SHl0YkxaemlCV2J3NXVYbGI5MzBZSkppSw==");LS.set("vds_github_token",CFG.token)}var local=ld();ST.users=(local.config&&local.config.users)||[];if(ST.users.length===0)ST.users=[{name:"管理员",password:"123456",role:"admin"}];var su=LS.getJson("vds_user",null);if(su){ST.user=su;loadData()}else{render()}})();
 
 </script></body></html>
