@@ -101,7 +101,7 @@ function rn(r){var m={applicant:"申请人",approver:"审批人",dispatcher:"派
 function toast(m,t){t=t||"info";var d=document.createElement("div");d.className="toast toast-"+(t==="success"?"ok":t==="error"?"err":"info");d.textContent=m;document.body.appendChild(d);setTimeout(function(){d.style.opacity="0";d.style.transition="opacity .3s";setTimeout(function(){d.remove()},300)},2500)}
 function ldLocal(){try{return JSON.parse(ls("cdsp")||'{"reqs":[],"vehs":[],"drvs":[]}')}catch(e){return{reqs:[],vehs:[],drvs:[]}}}
 function svLocal(d){ss("cdsp",JSON.stringify(d))}
-function loadData(){S.load=true;R();if(!CONFIG.githubToken){S.sync="err";S.load=false;toast("请先在设置中配置GitHub Token","error");R();return}GitHubAPI.readData().then(function(d){if(d){S.reqs=d.requests||[];S.vehs=d.vehicles||[];S.drvs=d.drivers||[];S.cfg=d.config||{};S.sync="ok"}else{S.sync="err"}S.load=false;R()})}
+function loadData(){S.load=true;R();if(!CONFIG.githubToken){S.sync="err";S.load=false;toast("请先在设置中配置GitHub Token","error");R();return}var to=setTimeout(function(){S.sync="err";S.load=false;R()},8000);GitHubAPI.readData().then(function(d){clearTimeout(to);if(d){S.reqs=d.requests||[];S.vehs=d.vehicles||[];S.drvs=d.drivers||[];S.cfg=d.config||{};S.sync="ok"}else{S.sync="err"}S.load=false;R()}).catch(function(e){clearTimeout(to);S.sync="err";S.load=false;R()})}
 function saveData(){var d={requests:S.reqs,vehicles:S.vehs,drivers:S.drvs,config:S.cfg};if(!CONFIG.githubToken){S.sync="err";toast("请先在设置中配置GitHub Token","error");R();return}S.sync="saving";R();GitHubAPI.writeData(d).then(function(ok){S.sync=ok?"ok":"err";if(ok)svLocal(d);R()})}
 
 function R(){var a=document.getElementById("app");if(!S.user){a.innerHTML=RL();return}var ti=[];if(S.user.role==="applicant"||S.user.role==="admin"){ti.push({id:"dashboard",label:"我的申请"});ti.push({id:"new-request",label:"新建申请"})}if(S.user.role==="approver"||S.user.role==="admin")ti.push({id:"approve",label:"待审批"});if(S.user.role==="dispatcher"||S.user.role==="admin")ti.push({id:"dispatch",label:"派车管理"});if(S.user.role==="admin"){ti.push({id:"all",label:"全部记录"});ti.push({id:"manage",label:"基础数据"});ti.push({id:"settings",label:"系统设置"})}if(!ti.find(function(x){return x.id===S.tab}))S.tab=ti[0]?ti[0].id:"dashboard";a.innerHTML=RH(ti)+'<div class="main">'+RC()+"</div>"+(S.modal?RM():"");BE()}
@@ -156,3 +156,4 @@ function openSettingsModal(){S.modal="settings";R()}function RSM(){return'<div c
 </script>
 </body>
 </html>
+
