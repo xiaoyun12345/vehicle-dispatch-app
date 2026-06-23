@@ -161,6 +161,7 @@ function saveGithubToken(){var t=document.getElementById("st-gt").value.trim();i
 
 
 
+function goNewRequest(){goNewRequest()}
 function goDashboard(){ST.tab="dashboard";render()}
 function bindEvents(){var btns=document.querySelectorAll(".nav button[data-tab]");for(var i=0;i<btns.length;i++){btns[i].onclick=function(t){return function(){ST.tab=t;ST.sel=null;render()}}(btns[i].getAttribute("data-tab"))}}
 
