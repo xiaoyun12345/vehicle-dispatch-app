@@ -1,8 +1,20 @@
-{
-  "requests": [],
-  "vehicles": [],
-  "drivers": [],
-  "config": {
-    "password": "123456"
-  }
+﻿{
+    "config":  {
+                   "users":  [
+                                 {
+                                     "name":  "管理员",
+                                     "password":  "123456",
+                                     "role":  "admin"
+                                 }
+                             ]
+               },
+    "vehicles":  [
+
+                 ],
+    "requests":  [
+
+                 ],
+    "drivers":  [
+
+                ]
 }
