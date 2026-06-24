@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -87,8 +87,7 @@ form{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 </head>
 <body>
 <div id="app"><div class="loading-overlay" style="min-height:60vh"><div class="spinner"></div>加载中...</div></div>
-<script>
-var CONFIG={githubOwner:"xiaoyun12345",githubRepo:"vehicle-dispatch-app",githubToken:localStorage.getItem("github_token")||"",dataPath:"data.json",apiBase:"https://api.github.com"};
+<script>var CONFIG={githubOwner:"xiaoyun12345",githubRepo:"vehicle-dispatch-app",githubToken:localStorage.getItem("github_token")||"",dataPath:"data.json",apiBase:"https://api.github.com"};
 var GitHubAPI={_sha:null,readData:function(){var s=this;return fetch(CONFIG.apiBase+"/repos/"+CONFIG.githubOwner+"/"+CONFIG.githubRepo+"/contents/"+CONFIG.dataPath,{headers:{Authorization:"token "+CONFIG.githubToken,Accept:"application/vnd.github.v3+json"}}).then(function(r){if(!r.ok){if(r.status===404)return{requests:[],vehicles:[],drivers:[],config:{}};throw new Error("read fail "+r.status)}return r.json()}).then(function(d){s._sha=d.sha;return JSON.parse(atob(d.content))}).catch(function(e){console.error(e);return null})},writeData:function(data){var s=this;var c=btoa(unescape(encodeURIComponent(JSON.stringify(data))));var b={message:"update",content:c};if(s._sha)b.sha=s._sha;return fetch(CONFIG.apiBase+"/repos/"+CONFIG.githubOwner+"/"+CONFIG.githubRepo+"/contents/"+CONFIG.dataPath,{method:"PUT",headers:{Authorization:"token "+CONFIG.githubToken,Accept:"application/vnd.github.v3+json","Content-Type":"application/json"},body:JSON.stringify(b)}).then(function(r){if(!r.ok){if(r.status===409){s._sha=null;return s.writeData(data)}throw new Error("write fail "+r.status)}return r.json()}).then(function(d){s._sha=d.content.sha;return true}).catch(function(e){console.error(e);return false})}};
 var S={user:null,users:[],tab:"dashboard",reqs:[],vehs:[],drvs:[],cfg:{},modal:null,sel:null,sync:"idle",load:false,editV:null,editD:null,regMode:false};
 function gid(){return"rq_"+Date.now().toString(36)+"_"+Math.random().toString(36).substring(2,8)}
