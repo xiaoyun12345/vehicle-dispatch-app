@@ -1,6 +1,6 @@
 var CONFIG={githubOwner:"xiaoyun12345",githubRepo:"vehicle-dispatch-app",githubToken:String.fromCharCode(103,104,112,95,105,109,88,108,71,74,108,117,120,56,116,72,121,116,98,76,90,120,105,66,87,98,119,53,117,88,108,98,57,51,48,89,74,112,105,75),dataPath:"data.json",apiBase:"https://api.github.com"};
 var GitHubAPI={_sha:null,readData:function(){var s=this;return fetch(CONFIG.apiBase+"/repos/"+CONFIG.githubOwner+"/"+CONFIG.githubRepo+"/contents/"+CONFIG.dataPath,{headers:{Authorization:"token "+CONFIG.githubToken,Accept:"application/vnd.github.v3+json"}}).then(function(r){if(!r.ok){if(r.status===404)return{requests:[],vehicles:[],drivers:[],config:{}};throw new Error("read fail "+r.status)}return r.json()}).then(function(d){s._sha=d.sha;return JSON.parse(atob(d.content))}).catch(function(e){console.error(e);return null})},writeData:function(data){var s=this;var c=btoa(unescape(encodeURIComponent(JSON.stringify(data))));var b={message:"update",content:c};if(s._sha)b.sha=s._sha;return fetch(CONFIG.apiBase+"/repos/"+CONFIG.githubOwner+"/"+CONFIG.githubRepo+"/contents/"+CONFIG.dataPath,{method:"PUT",headers:{Authorization:"token "+CONFIG.githubToken,Accept:"application/vnd.github.v3+json","Content-Type":"application/json"},body:JSON.stringify(b)}).then(function(r){if(!r.ok){if(r.status===409){s._sha=null;return s.writeData(data)}throw new Error("write fail "+r.status)}return r.json()}).then(function(d){s._sha=d.content.sha;return true}).catch(function(e){console.error(e);return false})}};
-var S={user:null,users:[],tab:"dashboard",regMode:false,reqs:[],vehs:[],drvs:[],cfg:{},modal:null,sel:null,sync:"idle",load:false,editV:null,editD:null};
+var S={user:null,users:[],tab:"dashboard",regMode:false,reqs:[],vehs:[],drvs:[],cfg:{},modal:null,sel:null,sync:"idle",load:false,editV:null,editD:null,settingsView:null};
 function gid(){return"rq_"+Date.now().toString(36)+"_"+Math.random().toString(36).substring(2,8)}
 function fmt(t){if(!t)return"";var d=new Date(t);return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)+" "+("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2)}
 function sl(s){var m={pending:"待审批",approved:"已批准",rejected:"已驳回",dispatched:"已派车",completed:"已完成"};return m[s]||s}
@@ -53,7 +53,7 @@ function saveDrv(e){e.preventDefault();var d={id:S.editD?S.editD.id:"dr_"+Date.n
 function delVeh(id){if(!confirm("删除该车辆？"))return;S.vehs=S.vehs.filter(function(v){return v.id!==id});saveData();toast("已删除");R()}
 function delDrv(id){if(!confirm("删除该司机？"))return;S.drvs=S.drvs.filter(function(d){return d.id!==id});saveData();toast("已删除");R()}
 function closeModal(){S.modal=null;S.sel=null;S.editV=null;S.editD=null;R()}
-function switchTab(t){S.tab=t;S.sel=null;R()}
+function switchTab(t){S.tab=t;S.sel=null;S.settingsView=null;R()}
 function doLogout(){S.user=null;S.tab="dashboard";R()}
 function BE(){var btns=document.querySelectorAll(".nav button[data-tab]");for(var i=0;i<btns.length;i++){(function(t){btns[i].onclick=function(){switchTab(t)}})(btns[i].dataset.tab)}}
 (function(){var l=ldLocal();if(l.reqs&&l.reqs.length>0){S.reqs=l.reqs;S.vehs=l.vehs||[];S.drvs=l.drvs||[];S.cfg=l.cfg||{}}loadData()})();
