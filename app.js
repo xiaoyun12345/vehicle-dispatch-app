@@ -56,4 +56,4 @@ function closeModal(){S.modal=null;S.sel=null;S.editV=null;S.editD=null;R()}
 function switchTab(t){S.tab=t;S.sel=null;S.settingsView=null;R()}
 function doLogout(){S.user=null;S.tab="dashboard";R()}
 function BE(){var btns=document.querySelectorAll(".nav button[data-tab]");for(var i=0;i<btns.length;i++){(function(t){btns[i].onclick=function(){switchTab(t)}})(btns[i].dataset.tab)}}
-(function(){var l=ldLocal();if(l.reqs&&l.reqs.length>0){S.reqs=l.reqs;S.vehs=l.vehs||[];S.drvs=l.drvs||[];S.cfg=l.cfg||{}}loadData()})();
+(function(){var l=ldLocal();if(l.reqs&&l.reqs.length>0){S.reqs=l.reqs;S.vehs=l.vehs||[];S.drvs=l.drvs||[];S.cfg=l.cfg||{}}if(!S.users||S.users.length===0){S.users=[{name:"管理员",password:"123456",role:"admin"}];S.cfg.users=S.users}R()})();
