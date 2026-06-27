@@ -121,7 +121,7 @@ API.rd=function(){var s=this;return fetch(CFG.api+"/repos/"+CFG.owner+"/"+CFG.re
 API.wr=function(d){var s=this;var b=btoa(unescape(encodeURIComponent(JSON.stringify(d))));var p={message:"u",content:b};if(s.sha)p.sha=s.sha;return fetch(CFG.api+"/repos/"+CFG.owner+"/"+CFG.repo+"/contents/"+CFG.path,{method:"PUT",headers:{Authorization:"token "+CFG.token,Accept:"application/vnd.github.v3+json","Content-Type":"application/json"},body:JSON.stringify(p)}).then(function(r){if(!r.ok){if(r.status===409){s.sha=null;return s.wr(d)}throw new Error("w"+r.status)}return r.json()}).then(function(d){s.sha=d.content.sha;return true}).catch(function(e){console.error("GW",e);return false})};
 
 /* ===== DATA ===== */
-function ldD(){S.load=true;R();var tid=setTimeout(function(){if(!S.users||S.users.length===0){S.users=[{name:"管理员",password:"123456",role:"admin"}];S.cfg.users=S.users}S.load=false;R()},5000);API.rd().then(function(d){clearTimeout(tid);if(d){S.reqs=d.requests||[];S.vehs=d.vehicles||[];S.drvs=d.drivers||[];S.cfg=d.config||{};S.users=S.cfg.users||[];S.sync="ok"}else{S.sync="err";if(!S.users||S.users.length===0){S.users=[{name:"管理员",password:"123456",role:"admin"}];S.cfg.users=S.users}}S.load=false;R()})}
+function ldD(){S.load=true;R();var tid=setTimeout(function(){if(!S.users||S.users.length===0){S.users=[{name:"管理员",password:"123456",role:"admin"}];S.cfg.users=S.users}S.load=false;R()},5000);API.rd().then(function(d){clearTimeout(tid);if(d){S.reqs=d.requests||[];S.vehs=d.vehicles||[];S.drvs=d.drivers||[];S.cfg=d.config||{};S.users=S.cfg.users||[];S.sync="ok"}else{S.sync="err";if(!S.users||S.users.length===0){S.users=[{name:"管理员",password:"123456",role:"admin"}];S.cfg.users=S.users}}S.load=false;R()})}function sync(){if(S.tab==="new"||S.modal)return;API.rd().then(function(d){if(d){S.reqs=d.requests||[];S.vehs=d.vehicles||[];S.drvs=d.drivers||[];S.cfg=d.config||{};S.users=S.cfg.users||[];S.sync="ok";R()}})}
 function svD(){var d={requests:S.reqs,vehicles:S.vehs,drivers:S.drvs,config:S.cfg};S.sync="saving";R();API.wr(d).then(function(ok){S.sync=ok?"ok":"err";if(ok)svL(d);R()})}
 /* ===== RENDER ===== */
 function R(){var a=document.getElementById("app");if(S.load){a.innerHTML='<div class="loading-overlay"><div class="spinner"></div>加载中...</div>';return}if(!S.user){a.innerHTML=renderLogin();return}var tabs=getTabs();if(!tabs.find(function(t){return t.id===S.tab}))S.tab=tabs[0]?tabs[0].id:"dash";a.innerHTML=renderHeader(tabs)+'<div class="main">'+renderContent()+'</div>'+(S.modal?renderModal():"");bindNav()}
@@ -140,7 +140,7 @@ function doReg(){var u=document.getElementById("rg-u").value.trim();var p=docume
 
 function doOut(){S.user=null;S.tab="dash";clS();R()}
 function goSet(){S.tab="set";S.sel=null;S.setView=null;R()}
-function goTab(t){S.tab=t;S.sel=null;S.setView=null;if(t==="dash"||t==="appr"||t==="disp"||t==="all"){ldD()}else{R()}}
+function goTab(t){S.tab=t;S.sel=null;S.setView=null;if(t==="dash"||t==="appr"||t==="disp"||t==="all"){sync()}else{R()}}
 function bindNav(){var btns=document.querySelectorAll(".nav button[data-tab]");for(var i=0;i<btns.length;i++){(function(t){btns[i].onclick=function(){goTab(t)}})(btns[i].dataset.tab)}}
 /* ===== DASHBOARD ===== */
 function renderDash(){var my=S.reqs.filter(function(r){return r.applicant===S.user.name});var p=my.filter(function(r){return r.status==="pending"}).length;var a=my.filter(function(r){return r.status==="approved"||r.status==="dispatched"}).length;var n=my.filter(function(r){return r.status==="rejected"}).length;var c=my.filter(function(r){return r.status==="completed"}).length;return'<div class="stats-grid"><div class="stat-card"><div class="n">'+my.length+'</div><div class="l">申请总数</div></div><div class="stat-card"><div class="n">'+p+'</div><div class="l">待审批</div></div><div class="stat-card"><div class="n">'+a+'</div><div class="l">已通过</div></div><div class="stat-card"><div class="n">'+n+'</div><div class="l">已驳回</div></div><div class="stat-card"><div class="n">'+c+'</div><div class="l">已完成</div></div></div><div class="card"><div class="card-header"><h2>我的申请</h2><button class="btn btn-primary btn-sm" onclick="goTab(\'new\')">+ 新建</button></div><div class="card-body">'+renderTable(my,true)+"</div></div>"}
@@ -195,7 +195,7 @@ function delV(id){if(!confirm("删除该车辆？"))return;S.vehs=S.vehs.filter(
 function delD(id){if(!confirm("删除该司机？"))return;S.drvs=S.drvs.filter(function(d){return d.id!==id});svD();tt("已删除");R()}
 
 /* ===== INIT ===== */
-(function(){try{var l=ldL();if(l.reqs&&l.reqs.length>0){S.reqs=l.reqs;S.vehs=l.vehs||[];S.drvs=l.drvs||[];S.cfg=l.cfg||{}}if(!S.users||S.users.length===0){S.users=[{name:"管理员",password:"123456",role:"admin"}];S.cfg.users=S.users}var s=ldS();if(s&&s.name&&s.role){S.user=s;ldD();return}R()}catch(e){console.error(e);S.load=false;R()}})();setInterval(function(){if(S.user){ldD()}},10000);
+(function(){try{var l=ldL();if(l.reqs&&l.reqs.length>0){S.reqs=l.reqs;S.vehs=l.vehs||[];S.drvs=l.drvs||[];S.cfg=l.cfg||{}}if(!S.users||S.users.length===0){S.users=[{name:"管理员",password:"123456",role:"admin"}];S.cfg.users=S.users}var s=ldS();if(s&&s.name&&s.role){S.user=s;ldD();return}R()}catch(e){console.error(e);S.load=false;R()}})();setInterval(function(){if(S.user){sync()}},10000);
 </script>
 </body>
 </html>
