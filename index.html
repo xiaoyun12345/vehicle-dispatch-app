@@ -400,9 +400,11 @@ function R() {
         return
     }
     var tabs = getTabs();
-    if (!tabs.find(function(t) {
-            return t.id === S.tab
-        })) S.tab = tabs[0] ? tabs[0].id : "dash";
+    if (!S.tab || !tabs.find(function(t) { return t.id === S.tab })) {
+        if (S.user.role === "approver") S.tab = "appr";
+        else if (S.user.role === "dispatcher") S.tab = "disp";
+        else S.tab = "dash";
+    }
     a.innerHTML = renderHeader(tabs) + '<div class="main">' + renderContent() + '</div>' + (S.modal ? renderModal() : "");
     bindNav()
 }
@@ -410,42 +412,29 @@ function R() {
 function getTabs() {
     var tabs = [];
     if (!S.user) return tabs;
-    if (can(S.user, "applicant")) {
-        tabs.push({
-            id: "dash",
-            label: "我的申请"
-        });
-        tabs.push({
-            id: "new",
-            label: "新建申请"
-        })
+    var role = S.user.role;
+    if (role === "approver") {
+        tabs.push({id:"appr",label:"???"});
+        tabs.push({id:"dash",label:"???"});
+        tabs.push({id:"new",label:"????"})
+    } else if (role === "dispatcher") {
+        tabs.push({id:"disp",label:"????"});
+        tabs.push({id:"dash",label:"???"});
+        tabs.push({id:"new",label:"????"})
+    } else if (role === "admin") {
+        tabs.push({id:"dash",label:"???"});
+        tabs.push({id:"new",label:"????"});
+        tabs.push({id:"appr",label:"???"});
+        tabs.push({id:"disp",label:"????"});
+        tabs.push({id:"all",label:"????"});
+        tabs.push({id:"mgmt",label:"????"})
+    } else {
+        tabs.push({id:"dash",label:"????"});
+        tabs.push({id:"new",label:"????"})
     }
-    if (can(S.user, "approver")) tabs.push({
-        id: "appr",
-        label: "待审批"
-    });
-    if (can(S.user, "dispatcher")) tabs.push({
-        id: "disp",
-        label: "派车管理"
-    });
-    if (can(S.user, "admin")) {
-        tabs.push({
-            id: "all",
-            label: "全部记录"
-        });
-        tabs.push({
-            id: "mgmt",
-            label: "基础数据"
-        })
-    }
-    tabs.push({
-        id: "set",
-        label: "系统设置"
-    });
+    tabs.push({id:"set",label:"????"});
     var seen = {};
-    return tabs.filter(function(t) {
-        return seen[t.id] ? false : (seen[t.id] = true)
-    })
+    return tabs.filter(function(t) { return seen[t.id] ? false : (seen[t.id] = true) })
 }
 
 function renderHeader(tabs) {
@@ -690,7 +679,7 @@ function doReg() {
 
 function doOut() {
     S.user = null;
-    S.tab = "dash";
+    S.tab = "";
     clS();
     R()
 }
@@ -726,22 +715,80 @@ function bindNav() {
 }
 /* ===== DASHBOARD ===== */
 function renderDash() {
-    var my = S.reqs.filter(function(r) {
-        return r.applicant === S.user.name
-    });
-    var p = my.filter(function(r) {
-        return r.status === "pending"
-    }).length;
-    var a = my.filter(function(r) {
-        return r.status === "approved" || r.status === "dispatched"
-    }).length;
-    var n = my.filter(function(r) {
-        return r.status === "rejected"
-    }).length;
-    var c = my.filter(function(r) {
-        return r.status === "completed"
-    }).length;
-    return '<div class="stats-grid"><div class="stat-card"><div class="n">' + my.length + '</div><div class="l">申请总数</div></div><div class="stat-card"><div class="n">' + p + '</div><div class="l">待审批</div></div><div class="stat-card"><div class="n">' + a + '</div><div class="l">已通过</div></div><div class="stat-card"><div class="n">' + n + '</div><div class="l">已驳回</div></div><div class="stat-card"><div class="n">' + c + '</div><div class="l">已完成</div></div></div><div class="card"><div class="card-header"><h2>我的申请</h2><button class="btn btn-primary btn-sm" onclick="goTab(\'new\')">+ 新建</button></div><div class="card-body">' + renderTable(my, true) + "</div></div>"
+    var role = S.user.role;
+    if (role === "approver") {
+        var pending = S.reqs.filter(function(r){return r.status==="pending"});
+        var apprCnt = S.reqs.filter(function(r){return r.approver===S.user.name && r.status==="approved"}).length;
+        var rejCnt = S.reqs.filter(function(r){return r.approver===S.user.name && r.status==="rejected"}).length;
+        var today = new Date().toISOString().slice(0,10);
+        var todayCnt = S.reqs.filter(function(r){return (r.createdAt||"").slice(0,10)===today}).length;
+        return '<div class="stats-grid">'
+            + '<div class="stat-card"><div class="n">'+pending.length+'</div><div class="l">???</div></div>'
+            + '<div class="stat-card"><div class="n">'+apprCnt+'</div><div class="l">????</div></div>'
+            + '<div class="stat-card"><div class="n">'+rejCnt+'</div><div class="l">????</div></div>'
+            + '<div class="stat-card"><div class="n">'+todayCnt+'</div><div class="l">????</div></div>'
+            + '<div class="stat-card"><div class="n">'+S.reqs.length+'</div><div class="l">????</div></div>'
+            + '</div>'
+            + '<div class="card"><div class="card-header"><h2>????? ('+pending.length+')</h2><button class="btn btn-primary btn-sm" onclick="goTab(\'appr\')">?????</button></div><div class="card-body">'
+            + (pending.length===0?'<div class="empty"><div class="big">&#128203;</div>??????????</div>':renderTable(pending, true))
+            + '</div></div>'
+            + '<div class="card"><div class="card-header"><h2>??????????????</h2><button class="btn btn-outline btn-sm" onclick="goTab(\'new\')">+ ????</button></div><div class="card-body">'
+            + renderTable(S.reqs.filter(function(r){return r.applicant===S.user.name}), true)
+            + '</div></div>'
+    }
+    if (role === "dispatcher") {
+        var toDispatch = S.reqs.filter(function(r){return r.status==="approved"});
+        var onTrip = S.reqs.filter(function(r){return r.status==="dispatched"});
+        var doneCnt = S.reqs.filter(function(r){return r.status==="completed"}).length;
+        var availV = S.vehs.filter(function(v){return v.status==="available"}).length;
+        var activeD = S.drvs.filter(function(d){return d.status==="active"}).length;
+        return '<div class="stats-grid">'
+            + '<div class="stat-card"><div class="n">'+toDispatch.length+'</div><div class="l">???</div></div>'
+            + '<div class="stat-card"><div class="n">'+onTrip.length+'</div><div class="l">???</div></div>'
+            + '<div class="stat-card"><div class="n">'+doneCnt+'</div><div class="l">???</div></div>'
+            + '<div class="stat-card"><div class="n">'+availV+'/'+S.vehs.length+'</div><div class="l">????</div></div>'
+            + '<div class="stat-card"><div class="n">'+activeD+'/'+S.drvs.length+'</div><div class="l">??</div></div>'
+            + '</div>'
+            + '<div class="card"><div class="card-header"><h2>????? ('+toDispatch.length+')</h2><button class="btn btn-primary btn-sm" onclick="goTab(\'disp\')">?????</button></div><div class="card-body">'
+            + (toDispatch.length===0?'<div class="empty"><div class="big">&#128663;</div>???????????</div>':renderTable(toDispatch, true))
+            + '</div></div>'
+            + '<div class="card"><div class="card-header"><h2>???</h2></div><div class="card-body">'
+            + (onTrip.length===0?'<div class="empty">????????</div>':renderTable(onTrip, true))
+            + '</div></div>'
+    }
+    if (role === "admin") {
+        var p = S.reqs.filter(function(r){return r.status==="pending"}).length;
+        var td = S.reqs.filter(function(r){return r.status==="approved"}).length;
+        var ot = S.reqs.filter(function(r){return r.status==="dispatched"}).length;
+        var today = new Date().toISOString().slice(0,10);
+        var month = today.slice(0,7);
+        var todayCnt = S.reqs.filter(function(r){return (r.createdAt||"").slice(0,10)===today}).length;
+        var monthCnt = S.reqs.filter(function(r){return (r.createdAt||"").slice(0,7)===month}).length;
+        return '<div class="stats-grid">'
+            + '<div class="stat-card"><div class="n">'+p+'</div><div class="l">???</div></div>'
+            + '<div class="stat-card"><div class="n">'+td+'</div><div class="l">???</div></div>'
+            + '<div class="stat-card"><div class="n">'+ot+'</div><div class="l">???</div></div>'
+            + '<div class="stat-card"><div class="n">'+todayCnt+'</div><div class="l">????</div></div>'
+            + '<div class="stat-card"><div class="n">'+monthCnt+'</div><div class="l">????</div></div>'
+            + '<div class="stat-card"><div class="n">'+S.users.length+'</div><div class="l">??</div></div>'
+            + '<div class="stat-card"><div class="n">'+S.vehs.length+'</div><div class="l">??</div></div>'
+            + '<div class="stat-card"><div class="n">'+S.drvs.length+'</div><div class="l">??</div></div>'
+            + '</div>'
+            + '<div class="two-col">'
+            + '<div class="card"><div class="card-header"><h2>????</h2><button class="btn btn-outline btn-sm" onclick="goTab(\'appr\')">??</button> <button class="btn btn-outline btn-sm" onclick="goTab(\'disp\')">??</button></div><div class="card-body">'
+            + renderTable(S.reqs.filter(function(r){return r.status==="pending"||r.status==="approved"}).slice(0,8), true)
+            + '</div></div>'
+            + '<div class="card"><div class="card-header"><h2>????</h2><button class="btn btn-primary btn-sm" onclick="goTab(\'all\')">????</button></div><div class="card-body">'
+            + renderTable(S.reqs.slice().sort(function(a,b){return new Date(b.createdAt)-new Date(a.createdAt)}).slice(0,8), true)
+            + '</div></div>'
+            + '</div>'
+    }
+    var my = S.reqs.filter(function(r) { return r.applicant === S.user.name });
+    var p = my.filter(function(r) { return r.status === "pending" }).length;
+    var a = my.filter(function(r) { return r.status === "approved" || r.status === "dispatched" }).length;
+    var n = my.filter(function(r) { return r.status === "rejected" }).length;
+    var c = my.filter(function(r) { return r.status === "completed" }).length;
+    return '<div class="stats-grid"><div class="stat-card"><div class="n">'+my.length+'</div><div class="l">????</div></div><div class="stat-card"><div class="n">'+p+'</div><div class="l">???</div></div><div class="stat-card"><div class="n">'+a+'</div><div class="l">???/???</div></div><div class="stat-card"><div class="n">'+n+'</div><div class="l">???</div></div><div class="stat-card"><div class="n">'+c+'</div><div class="l">???</div></div></div><div class="card"><div class="card-header"><h2>????</h2><button class="btn btn-primary btn-sm" onclick="goTab(\'new\')">+ ??</button></div><div class="card-body">'+renderTable(my, true)+"</div></div>"
 }
 
 /* ===== NEW REQUEST ===== */
